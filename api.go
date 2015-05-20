@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	defaultDockerRootDirectory    = "/var/lib/docker/volumes"
+	DefaultDockerRootDirectory    = "/var/lib/docker/volumes"
 	defaultContentTypeV1          = "appplication/vnd.docker.plugins.v1+json"
 	defaultImplementationManifest = `{"Implements": ["VolumeDriver"]}`
 )
@@ -40,7 +40,7 @@ type VolumeHandler struct {
 type actionHandler func(VolumeRequest) VolumeResponse
 
 func NewVolumeHandler(handler VolumeDriver) *VolumeHandler {
-	return NewVolumeHandlerWithRoot(defaultDockerRootDirectory, handler)
+	return NewVolumeHandlerWithRoot(DefaultDockerRootDirectory, handler)
 }
 
 func NewVolumeHandlerWithRoot(rootDirectory string, handler VolumeDriver) *VolumeHandler {
