@@ -13,7 +13,7 @@ const (
 )
 
 type VolumeRequest struct {
-	Root string `json:",ommitempty"`
+	Root string `json:",omitempty"`
 	Name string
 }
 
