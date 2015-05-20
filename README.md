@@ -13,7 +13,7 @@ This library is designed to be integrated in your program.
 ```go
   d := MyVolumeDriver{}
   h := volumeapi.NewVolumeHandler(d)
-  h.ListenAndServe(":8080")
+  h.ListenAndServe("tcp", ":8080", "")
 ```
 
 See a full example in https://github.com/calavera/docker-volume-garbage-generator

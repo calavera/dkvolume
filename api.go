@@ -3,6 +3,7 @@ package volumeapi
 import (
 	"encoding/json"
 	"fmt"
+	"net"
 	"net/http"
 )
 
@@ -43,29 +44,12 @@ func NewVolumeHandler(handler VolumeDriver) *VolumeHandler {
 }
 
 func NewVolumeHandlerWithRoot(rootDirectory string, handler VolumeDriver) *VolumeHandler {
-	return &VolumeHandler{rootDirectory, handler, http.NewServeMux()}
+	h := &VolumeHandler{rootDirectory, handler, http.NewServeMux()}
+	h.initMux()
+	return h
 }
 
-func (h *VolumeHandler) handle(name string, actionCall actionHandler) {
-	h.mux.HandleFunc(name, func(w http.ResponseWriter, r *http.Request) {
-		req, err := decodeRequest(w, r)
-		if err != nil {
-			return
-		}
-
-		req.Root = h.rootDirectory
-		res := actionCall(req)
-
-		encodeResponse(w, res)
-	})
-}
-
-func (h *VolumeHandler) ListenAndServe(addr string) error {
-	server := http.Server{
-		Addr:    addr,
-		Handler: h.mux,
-	}
-
+func (h *VolumeHandler) initMux() {
 	h.mux.HandleFunc("/Plugin.Activate", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", defaultContentTypeV1)
 		fmt.Fprintln(w, defaultImplementationManifest)
@@ -90,8 +74,44 @@ func (h *VolumeHandler) ListenAndServe(addr string) error {
 	h.handle("/VolumeDriver.Umount", func(req VolumeRequest) VolumeResponse {
 		return h.handler.Umount(req)
 	})
+}
 
-	return server.ListenAndServe()
+func (h *VolumeHandler) handle(name string, actionCall actionHandler) {
+	h.mux.HandleFunc(name, func(w http.ResponseWriter, r *http.Request) {
+		req, err := decodeRequest(w, r)
+		if err != nil {
+			return
+		}
+
+		req.Root = h.rootDirectory
+		res := actionCall(req)
+
+		encodeResponse(w, res)
+	})
+}
+
+func (h *VolumeHandler) ListenAndServe(proto, addr, group string) error {
+	server := http.Server{
+		Addr:    addr,
+		Handler: h.mux,
+	}
+
+	start := make(chan struct{})
+
+	var l net.Listener
+	var err error
+	switch proto {
+	case "tcp":
+		l, err = newTcpSocket(addr, nil, start)
+	case "unix":
+		l, err = newUnixSocket(addr, group, start)
+	}
+	if err != nil {
+		return err
+	}
+
+	close(start)
+	return server.Serve(l)
 }
 
 func decodeRequest(w http.ResponseWriter, r *http.Request) (req VolumeRequest, err error) {
