@@ -14,7 +14,6 @@ const (
 )
 
 type VolumeRequest struct {
-	Root string `json:",omitempty"`
 	Name string
 }
 
@@ -32,19 +31,14 @@ type VolumeDriver interface {
 }
 
 type VolumeHandler struct {
-	rootDirectory string
-	handler       VolumeDriver
-	mux           *http.ServeMux
+	handler VolumeDriver
+	mux     *http.ServeMux
 }
 
 type actionHandler func(VolumeRequest) VolumeResponse
 
 func NewVolumeHandler(handler VolumeDriver) *VolumeHandler {
-	return NewVolumeHandlerWithRoot(DefaultDockerRootDirectory, handler)
-}
-
-func NewVolumeHandlerWithRoot(rootDirectory string, handler VolumeDriver) *VolumeHandler {
-	h := &VolumeHandler{rootDirectory, handler, http.NewServeMux()}
+	h := &VolumeHandler{handler, http.NewServeMux()}
 	h.initMux()
 	return h
 }
@@ -83,7 +77,6 @@ func (h *VolumeHandler) handle(name string, actionCall actionHandler) {
 			return
 		}
 
-		req.Root = h.rootDirectory
 		res := actionCall(req)
 
 		encodeResponse(w, res)
