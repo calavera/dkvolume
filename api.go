@@ -34,7 +34,7 @@ type VolumeDriver interface {
 	Remove(VolumeRequest) VolumeResponse
 	Path(VolumeRequest) VolumeResponse
 	Mount(VolumeRequest) VolumeResponse
-	Umount(VolumeRequest) VolumeResponse
+	Unmount(VolumeRequest) VolumeResponse
 }
 
 type VolumeHandler struct {
@@ -73,7 +73,7 @@ func (h *VolumeHandler) initMux() {
 	})
 
 	h.handle(unmountPath, func(req VolumeRequest) VolumeResponse {
-		return h.handler.Umount(req)
+		return h.handler.Unmount(req)
 	})
 }
 
