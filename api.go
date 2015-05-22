@@ -11,6 +11,13 @@ const (
 	DefaultDockerRootDirectory    = "/var/lib/docker/volumes"
 	defaultContentTypeV1          = "appplication/vnd.docker.plugins.v1+json"
 	defaultImplementationManifest = `{"Implements": ["VolumeDriver"]}`
+
+	activatePath    = "/Plugin.Activate"
+	createPath      = "/VolumeDriver.Create"
+	remotePath      = "/VolumeDriver.Remove"
+	hostVirtualPath = "/VolumeDriver.Path"
+	mountPath       = "/VolumeDriver.Mount"
+	unmountPath     = "/VolumeDriver.Unmount"
 )
 
 type VolumeRequest struct {
@@ -44,28 +51,28 @@ func NewVolumeHandler(handler VolumeDriver) *VolumeHandler {
 }
 
 func (h *VolumeHandler) initMux() {
-	h.mux.HandleFunc("/Plugin.Activate", func(w http.ResponseWriter, r *http.Request) {
+	h.mux.HandleFunc(activatePath, func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", defaultContentTypeV1)
 		fmt.Fprintln(w, defaultImplementationManifest)
 	})
 
-	h.handle("/VolumeDriver.Create", func(req VolumeRequest) VolumeResponse {
+	h.handle(createPath, func(req VolumeRequest) VolumeResponse {
 		return h.handler.Create(req)
 	})
 
-	h.handle("/VolumeDriver.Remove", func(req VolumeRequest) VolumeResponse {
+	h.handle(remotePath, func(req VolumeRequest) VolumeResponse {
 		return h.handler.Remove(req)
 	})
 
-	h.handle("/VolumeDriver.Path", func(req VolumeRequest) VolumeResponse {
+	h.handle(hostVirtualPath, func(req VolumeRequest) VolumeResponse {
 		return h.handler.Path(req)
 	})
 
-	h.handle("/VolumeDriver.Mount", func(req VolumeRequest) VolumeResponse {
+	h.handle(mountPath, func(req VolumeRequest) VolumeResponse {
 		return h.handler.Mount(req)
 	})
 
-	h.handle("/VolumeDriver.Umount", func(req VolumeRequest) VolumeResponse {
+	h.handle(unmountPath, func(req VolumeRequest) VolumeResponse {
 		return h.handler.Umount(req)
 	})
 }
