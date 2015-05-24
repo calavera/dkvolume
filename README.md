@@ -16,7 +16,7 @@ This library is designed to be integrated in your program.
   h.ListenAndServe("tcp", ":8080", "")
 ```
 
-See a full example in https://github.com/calavera/docker-volume-garbage-generator
+See a full example in https://github.com/calavera/docker-volume-keywhiz-fs
 
 ## License
 
