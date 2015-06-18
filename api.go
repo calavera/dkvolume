@@ -26,7 +26,7 @@ type VolumeRequest struct {
 
 type VolumeResponse struct {
 	Mountpoint string
-	Err        error
+	Err        string
 }
 
 type VolumeDriver interface {
@@ -123,7 +123,7 @@ func decodeRequest(w http.ResponseWriter, r *http.Request) (req VolumeRequest, e
 
 func encodeResponse(w http.ResponseWriter, res VolumeResponse) {
 	w.Header().Set("Content-Type", defaultContentTypeV1)
-	if res.Err != nil {
+	if res.Err != "" {
 		w.WriteHeader(http.StatusInternalServerError)
 	}
 	json.NewEncoder(w).Encode(res)
