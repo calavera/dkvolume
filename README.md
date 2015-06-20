@@ -6,17 +6,27 @@ Go handler to create external volume extensions for Docker.
 
 This library is designed to be integrated in your program.
 
-1. Implement the `VolumeDriver` interface.
-2. Initialize a `VolumeHander` with your implementation.
-2. Call the method `ListenAndServe` from the `VolumeHandler`.
+1. Implement the `dkv.Driver` interface.
+2. Initialize a `dkv.Hander` with your implementation.
+3. Call either `ServeTCP` or `ServeUnix` from the `dkv.Handler`.
+
+### Example using TCP sockets:
 
 ```go
   d := MyVolumeDriver{}
-  h := volumeapi.NewVolumeHandler(d)
-  h.ListenAndServe("tcp", ":8080", "")
+  h := dkv.NewHandler(d)
+  h.ServeTCP("test_volume", ":8080")
 ```
 
-See a full example in https://github.com/calavera/docker-volume-keywhiz-fs
+### Example using Unix sockets:
+
+```go
+  d := MyVolumeDriver{}
+  h := dkv.NewHandler(d)
+  h.ServeUnix("root", "/usr/share/docker/plugins/test_volume.sock")
+```
+
+See a full example in https://github.com/calavera/docker-volume-glusterfs
 
 ## License
 
