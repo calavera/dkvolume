@@ -1,4 +1,4 @@
-package dkv
+package dkvolume
 
 import (
 	"encoding/json"
