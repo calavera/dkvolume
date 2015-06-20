@@ -28,8 +28,8 @@ This library is designed to be integrated in your program.
 
 ## Full example plugins
 
-https://github.com/calavera/docker-volume-glusterfs
-https://github.com/calavera/docker-volume-keywhiz
+- https://github.com/calavera/docker-volume-glusterfs
+- https://github.com/calavera/docker-volume-keywhiz
 
 ## License
 
