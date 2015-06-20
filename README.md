@@ -26,7 +26,10 @@ This library is designed to be integrated in your program.
   h.ServeUnix("root", "/usr/share/docker/plugins/test_volume.sock")
 ```
 
-See a full example in https://github.com/calavera/docker-volume-glusterfs
+## Full example plugins
+
+https://github.com/calavera/docker-volume-glusterfs
+https://github.com/calavera/docker-volume-keywhiz
 
 ## License
 
