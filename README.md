@@ -23,7 +23,7 @@ This library is designed to be integrated in your program.
 ```go
   d := MyVolumeDriver{}
   h := dkvolume.NewHandler(d)
-  h.ServeUnix("root", "/usr/share/docker/plugins/test_volume.sock")
+  h.ServeUnix("root", "test_volume")
 ```
 
 ## Full example plugins

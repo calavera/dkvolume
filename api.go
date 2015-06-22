@@ -119,6 +119,10 @@ func (h *Handler) listenAndServe(proto, addr, group string) error {
 		Handler: h.mux,
 	}
 
+	if err := os.MkdirAll(pluginSpecDir, 0755); err != nil {
+		return err
+	}
+
 	start := make(chan struct{})
 
 	var l net.Listener
@@ -130,7 +134,7 @@ func (h *Handler) listenAndServe(proto, addr, group string) error {
 			err = writeSpec(group, l.Addr().String())
 		}
 	case "unix":
-		l, err = newUnixSocket(addr, group, start)
+		l, err = newUnixSocket(fullSocketAddr(addr), group, start)
 	}
 	if err != nil {
 		return err
@@ -156,11 +160,15 @@ func encodeResponse(w http.ResponseWriter, res Response) {
 }
 
 func writeSpec(name, addr string) error {
-	if err := os.MkdirAll(pluginSpecDir, 0755); err != nil {
-		return err
-	}
-
 	spec := filepath.Join(pluginSpecDir, name+".spec")
 	url := "tcp://" + addr
 	return ioutil.WriteFile(spec, []byte(url), 0644)
+}
+
+func fullSocketAddr(addr string) string {
+	if filepath.IsAbs(addr) {
+		return addr
+	}
+
+	return filepath.Join(pluginSpecDir, addr+".sock")
 }
