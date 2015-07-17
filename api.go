@@ -16,7 +16,8 @@ const (
 
 	defaultContentTypeV1          = "appplication/vnd.docker.plugins.v1+json"
 	defaultImplementationManifest = `{"Implements": ["VolumeDriver"]}`
-	pluginSpecDir                 = "/usr/share/docker/plugins"
+	pluginSpecDir                 = "/etc/docker/plugins"
+	pluginSockDir                 = "/run/docker/plugins"
 
 	activatePath    = "/Plugin.Activate"
 	createPath      = "/VolumeDriver.Create"
@@ -119,10 +120,6 @@ func (h *Handler) listenAndServe(proto, addr, group string) error {
 		Handler: h.mux,
 	}
 
-	if err := os.MkdirAll(pluginSpecDir, 0755); err != nil {
-		return err
-	}
-
 	start := make(chan struct{})
 
 	var l net.Listener
@@ -134,7 +131,11 @@ func (h *Handler) listenAndServe(proto, addr, group string) error {
 			err = writeSpec(group, l.Addr().String())
 		}
 	case "unix":
-		l, err = newUnixSocket(fullSocketAddr(addr), group, start)
+		var s string
+		s, err = fullSocketAddr(addr)
+		if err == nil {
+			l, err = newUnixSocket(s, group, start)
+		}
 	}
 	if err != nil {
 		return err
@@ -160,15 +161,23 @@ func encodeResponse(w http.ResponseWriter, res Response) {
 }
 
 func writeSpec(name, addr string) error {
+	if err := os.MkdirAll(pluginSpecDir, 0755); err != nil {
+		return err
+	}
+
 	spec := filepath.Join(pluginSpecDir, name+".spec")
 	url := "tcp://" + addr
 	return ioutil.WriteFile(spec, []byte(url), 0644)
 }
 
-func fullSocketAddr(addr string) string {
-	if filepath.IsAbs(addr) {
-		return addr
+func fullSocketAddr(addr string) (string, error) {
+	if err := os.MkdirAll(pluginSockDir, 0755); err != nil {
+		return "", err
 	}
 
-	return filepath.Join(pluginSpecDir, addr+".sock")
+	if filepath.IsAbs(addr) {
+		return addr, nil
+	}
+
+	return filepath.Join(pluginSockDir, addr+".sock"), nil
 }
