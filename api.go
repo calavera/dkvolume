@@ -136,6 +136,7 @@ func (h *Handler) listenAndServe(proto, addr, group string) error {
 		if err == nil {
 			l, err = newUnixSocket(s, group, start)
 		}
+		defer os.Remove(s)
 	}
 	if err != nil {
 		return err
