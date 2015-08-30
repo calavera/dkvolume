@@ -115,28 +115,33 @@ func (h *Handler) ServeUnix(systemGroup, addr string) error {
 }
 
 func (h *Handler) listenAndServe(proto, addr, group string) error {
+	var (
+		start = make(chan struct{})
+		l     net.Listener
+		err   error
+		spec  string
+	)
+
 	server := http.Server{
 		Addr:    addr,
 		Handler: h.mux,
 	}
 
-	start := make(chan struct{})
-
-	var l net.Listener
-	var err error
 	switch proto {
 	case "tcp":
 		l, err = newTCPSocket(addr, nil, start)
 		if err == nil {
-			err = writeSpec(group, l.Addr().String())
+			spec, err = writeSpec(group, l.Addr().String())
 		}
 	case "unix":
-		var s string
-		s, err = fullSocketAddr(addr)
+		spec, err = fullSocketAddr(addr)
 		if err == nil {
-			l, err = newUnixSocket(s, group, start)
+			l, err = newUnixSocket(spec, group, start)
 		}
-		defer os.Remove(s)
+	}
+
+	if spec != "" {
+		defer os.Remove(spec)
 	}
 	if err != nil {
 		return err
@@ -161,14 +166,17 @@ func encodeResponse(w http.ResponseWriter, res Response) {
 	json.NewEncoder(w).Encode(res)
 }
 
-func writeSpec(name, addr string) error {
+func writeSpec(name, addr string) (string, error) {
 	if err := os.MkdirAll(pluginSpecDir, 0755); err != nil {
-		return err
+		return "", err
 	}
 
 	spec := filepath.Join(pluginSpecDir, name+".spec")
 	url := "tcp://" + addr
-	return ioutil.WriteFile(spec, []byte(url), 0644)
+	if err := ioutil.WriteFile(spec, []byte(url), 0644); err != nil {
+		return "", err
+	}
+	return spec, nil
 }
 
 func fullSocketAddr(addr string) (string, error) {
