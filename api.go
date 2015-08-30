@@ -14,7 +14,7 @@ const (
 	// DefaultDockerRootDirectory is the default directory where volumes will be created.
 	DefaultDockerRootDirectory = "/var/lib/docker/volumes"
 
-	defaultContentTypeV1          = "application/vnd.docker.plugins.v1+json"
+	defaultContentTypeV1_1        = "application/vnd.docker.plugins.v1.1+json"
 	defaultImplementationManifest = `{"Implements": ["VolumeDriver"]}`
 	pluginSpecDir                 = "/etc/docker/plugins"
 	pluginSockDir                 = "/run/docker/plugins"
@@ -29,7 +29,8 @@ const (
 
 // Request is the structure that docker's requests are deserialized to.
 type Request struct {
-	Name string
+	Name    string
+	Options map[string]string `json:"Opts,omitempty"`
 }
 
 // Response is the strucutre that the plugin's responses are serialized to.
@@ -64,7 +65,7 @@ func NewHandler(driver Driver) *Handler {
 
 func (h *Handler) initMux() {
 	h.mux.HandleFunc(activatePath, func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", defaultContentTypeV1)
+		w.Header().Set("Content-Type", defaultContentTypeV1_1)
 		fmt.Fprintln(w, defaultImplementationManifest)
 	})
 
@@ -153,7 +154,7 @@ func decodeRequest(w http.ResponseWriter, r *http.Request) (req Request, err err
 }
 
 func encodeResponse(w http.ResponseWriter, res Response) {
-	w.Header().Set("Content-Type", defaultContentTypeV1)
+	w.Header().Set("Content-Type", defaultContentTypeV1_1)
 	if res.Err != "" {
 		w.WriteHeader(http.StatusInternalServerError)
 	}
