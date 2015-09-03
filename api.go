@@ -126,7 +126,7 @@ func (h *Handler) listenAndServe(proto, addr, group string) error {
 
 	switch proto {
 	case "tcp":
-		l, err = newTCPListener(group, addr, start)
+		l, spec, err = newTCPListener(group, addr, start)
 	case "unix":
 		l, spec, err = newUnixListener(addr, group, start)
 	}
