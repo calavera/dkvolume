@@ -3,11 +3,9 @@ package dkvolume
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net"
 	"net/http"
 	"os"
-	"path/filepath"
 )
 
 const (
@@ -16,8 +14,6 @@ const (
 
 	defaultContentTypeV1_1        = "application/vnd.docker.plugins.v1.1+json"
 	defaultImplementationManifest = `{"Implements": ["VolumeDriver"]}`
-	pluginSpecDir                 = "/etc/docker/plugins"
-	pluginSockDir                 = "/run/docker/plugins"
 
 	activatePath    = "/Plugin.Activate"
 	createPath      = "/VolumeDriver.Create"
@@ -130,15 +126,9 @@ func (h *Handler) listenAndServe(proto, addr, group string) error {
 
 	switch proto {
 	case "tcp":
-		l, err = newTCPSocket(addr, nil, start)
-		if err == nil {
-			spec, err = writeSpec(group, l.Addr().String())
-		}
+		l, err = newTCPListener(group, addr, start)
 	case "unix":
-		spec, err = fullSocketAddr(addr)
-		if err == nil {
-			l, err = newUnixSocket(spec, group, start)
-		}
+		l, spec, err = newUnixListener(addr, group, start)
 	}
 
 	if spec != "" {
@@ -165,29 +155,4 @@ func encodeResponse(w http.ResponseWriter, res Response) {
 		w.WriteHeader(http.StatusInternalServerError)
 	}
 	json.NewEncoder(w).Encode(res)
-}
-
-func writeSpec(name, addr string) (string, error) {
-	if err := os.MkdirAll(pluginSpecDir, 0755); err != nil {
-		return "", err
-	}
-
-	spec := filepath.Join(pluginSpecDir, name+".spec")
-	url := "tcp://" + addr
-	if err := ioutil.WriteFile(spec, []byte(url), 0644); err != nil {
-		return "", err
-	}
-	return spec, nil
-}
-
-func fullSocketAddr(addr string) (string, error) {
-	if err := os.MkdirAll(pluginSockDir, 0755); err != nil {
-		return "", err
-	}
-
-	if filepath.IsAbs(addr) {
-		return addr, nil
-	}
-
-	return filepath.Join(pluginSockDir, addr+".sock"), nil
 }
