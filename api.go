@@ -12,7 +12,7 @@ import (
 
 const (
 	// DefaultDockerRootDirectory is the default directory where volumes will be created.
-	DefaultDockerRootDirectory = "/var/lib/docker/volumes"
+	DefaultDockerRootDirectory = "/var/lib/docker-volumes"
 
 	defaultContentTypeV1_1        = "application/vnd.docker.plugins.v1.1+json"
 	defaultImplementationManifest = `{"Implements": ["VolumeDriver"]}`
