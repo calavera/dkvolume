@@ -113,7 +113,6 @@ func (h *Handler) ServeUnix(systemGroup, addr string) error {
 
 func (h *Handler) listenAndServe(proto, addr, group string) error {
 	var (
-		start = make(chan struct{})
 		l     net.Listener
 		err   error
 		spec  string
@@ -126,9 +125,9 @@ func (h *Handler) listenAndServe(proto, addr, group string) error {
 
 	switch proto {
 	case "tcp":
-		l, spec, err = newTCPListener(group, addr, start)
+		l, spec, err = newTCPListener(group, addr)
 	case "unix":
-		l, spec, err = newUnixListener(addr, group, start)
+		l, spec, err = newUnixListener(addr, group)
 	}
 
 	if spec != "" {
@@ -138,7 +137,6 @@ func (h *Handler) listenAndServe(proto, addr, group string) error {
 		return err
 	}
 
-	close(start)
 	return server.Serve(l)
 }
 

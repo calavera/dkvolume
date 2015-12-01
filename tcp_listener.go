@@ -16,9 +16,8 @@ const (
 func newTCPListener(
 	volumeDriverName string,
 	address string,
-	start <-chan struct{},
 ) (net.Listener, string, error) {
-	listener, err := sockets.NewTCPSocket(address, nil, start)
+	listener, err := sockets.NewTCPSocket(address, nil)
 	if err != nil {
 		return nil, "", err
 	}
