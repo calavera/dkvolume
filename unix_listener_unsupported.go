@@ -14,7 +14,6 @@ var (
 func newUnixListener(
 	volumeDriverName string,
 	group string,
-	start <-chan struct{},
 ) (net.Listener, string, error) {
 	return nil, "", errOnlySupportedOnLinuxAndFreeBSD
 }
